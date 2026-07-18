@@ -375,6 +375,7 @@
     <nav class="tabs" id="tabsNav">
       <button data-page="inicio" class="active" data-i18n="nav.inicio">Início</button>
       <button data-page="participar" data-i18n="nav.participar">Participar</button>
+      <button data-page="acompanhar">Acompanhar</button>
       <button data-page="democracia" data-i18n="nav.democracia">Democracia</button>
       <button data-page="ouvidorias" data-i18n="nav.ouvidorias">Outras Ouvidorias</button>
       <button data-page="dados" data-i18n="nav.dados">Dados Estáticos</button>
@@ -642,7 +643,7 @@
       </div>
       <div class="submit-row">
         <button type="submit" class="btn primary" data-i18n="submit.btn">Enviar registro</button>
-        <span style="font-size:12.5px; color:var(--ink-soft);" data-i18n="submit.note">Este é um formulário de demonstração. Nenhum dado é enviado a um servidor.</span>
+        
       </div>
       <div class="confirm" id="confirmMsg" data-i18n="confirm.msg">Registro protocolado. Obrigado por participar, sua voz agora faz parte do mapa da comunidade.</div>
     </form>
@@ -650,6 +651,24 @@
 </div>
 
 <!-- ===================== DEMOCRACIA ===================== -->
+<div class="page" id="page-acompanhar">
+  <div class="wrap page-head">
+    <span class="selo azul">Consulta</span>
+    <h1 style="margin-top:14px;">Acompanhar registro</h1>
+    <p>Digite abaixo o número de protocolo que você recebeu ao enviar seu registro para ver o status e a resposta da Prefeitura ou da Câmara.</p>
+  </div>
+  <div class="wrap" style="padding-bottom:70px; max-width:560px;">
+    <div class="form-shell" style="padding:24px; margin:24px 0;">
+      <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Número de protocolo</label>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input type="text" id="protocoloInput" placeholder="Ex: 1042" style="flex:1; min-width:160px; padding:12px 14px; font-size:15px; border:2px solid var(--line); border-radius:4px; background:var(--card-bg); color:var(--ink); font-family:inherit;">
+        <button id="buscarProtocoloBtn" class="btn primary" type="button">Buscar</button>
+      </div>
+      <div id="protocoloResultado" style="margin-top:22px;"></div>
+    </div>
+  </div>
+</div>
+
 <div class="page" id="page-democracia">
   <div class="wrap page-head">
     <span class="selo medio" data-i18n="democracia.selo">Sobre o tema</span>
@@ -896,6 +915,8 @@
       foto_url: null
     };
 
+    let protocoloGerado = null;
+
     if(participaDB){
       if(fotoComprimida){
         const nomeArquivo = `registro-${Date.now()}.jpg`;
@@ -904,8 +925,9 @@
         const { data: urlData } = participaDB.storage.from('fotos').getPublicUrl(nomeArquivo);
         registro.foto_url = urlData.publicUrl;
       }
-      const { error } = await participaDB.from('registros').insert([registro]);
+      const { data: inserido, error } = await participaDB.from('registros').insert([registro]).select('id');
       if(error){ console.error(error); alert('Não foi possível enviar. Tente novamente em instantes.'); return; }
+      if(inserido && inserido[0]) protocoloGerado = inserido[0].id;
     } else {
       registro.id = Date.now();
       registro.data = new Date().toISOString();
@@ -913,9 +935,14 @@
       const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
       lista.unshift(registro);
       localStorage.setItem('participaRegistros', JSON.stringify(lista));
+      protocoloGerado = registro.id;
     }
 
-    document.getElementById('confirmMsg').classList.add('show');
+    const confirmEl = document.getElementById('confirmMsg');
+    if(protocoloGerado){
+      confirmEl.innerHTML = `Registro protocolado. Seu número de protocolo é <strong>#${protocoloGerado}</strong> — guarde esse número para acompanhar a resposta na aba "Acompanhar".`;
+    }
+    confirmEl.classList.add('show');
     this.reset();
     fotoComprimida = null;
     fotoPreview.style.display = 'none';
@@ -1037,6 +1064,51 @@
   }
 
   carregarDadosEstaticos();
+
+  /* ===== ACOMPANHAR REGISTRO POR PROTOCOLO ===== */
+  const statusLabels = { pendente:'Pendente', andamento:'Em andamento', respondido:'Respondido' };
+  const statusCores = { pendente:'#8a2c2c', andamento:'#8a5a13', respondido:'#276b3d' };
+
+  async function buscarProtocolo(){
+    const resultadoEl = document.getElementById('protocoloResultado');
+    const valor = document.getElementById('protocoloInput').value.trim().replace('#','');
+    if(!valor){
+      resultadoEl.innerHTML = '<p style="color:#a33;">Digite um número de protocolo.</p>';
+      return;
+    }
+    resultadoEl.innerHTML = '<p>Buscando...</p>';
+
+    let registro = null;
+
+    if(participaDB){
+      const { data, error } = await participaDB.from('registros').select('*').eq('id', valor).maybeSingle();
+      if(error){ console.error(error); resultadoEl.innerHTML = '<p style="color:#a33;">Erro ao buscar. Tente novamente.</p>'; return; }
+      registro = data;
+    } else {
+      const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
+      registro = lista.find(r => String(r.id) === valor) || null;
+    }
+
+    if(!registro){
+      resultadoEl.innerHTML = '<p style="color:#a33;">Nenhum registro encontrado com esse número de protocolo.</p>';
+      return;
+    }
+
+    const status = registro.status || 'pendente';
+    const dataFmt = new Date(registro.created_at || registro.data).toLocaleString('pt-BR');
+    resultadoEl.innerHTML = `
+      <div style="border-top:1px dashed var(--line); padding-top:18px;">
+        <div style="font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">${dataFmt} · ${registro.bairro || '—'}</div>
+        <div style="font-weight:600; margin-bottom:6px;">${registro.categoria || 'Sem categoria'}</div>
+        <div style="font-size:14px; line-height:1.5; margin-bottom:12px;">${(registro.descricao || '').replace(/</g,'&lt;')}</div>
+        <span style="display:inline-block; font-size:12px; font-weight:600; text-transform:uppercase; padding:4px 12px; border-radius:20px; background:rgba(0,0,0,0.06); color:${statusCores[status]};">${statusLabels[status]}</span>
+        ${registro.resposta ? `<div style="margin-top:16px; border-top:1px dashed var(--line); padding-top:14px;"><div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--azul-deep);">Resposta da Prefeitura / Câmara</div><div style="font-size:14px; line-height:1.5;">${registro.resposta.replace(/</g,'&lt;')}</div></div>` : `<p style="margin-top:14px; color:var(--ink-soft); font-size:13.5px;">Ainda sem resposta registrada.</p>`}
+      </div>
+    `;
+  }
+
+  document.getElementById('buscarProtocoloBtn').addEventListener('click', buscarProtocolo);
+  document.getElementById('protocoloInput').addEventListener('keydown', e => { if(e.key === 'Enter') buscarProtocolo(); });
 </script>
 </body>
 </html>
