@@ -971,6 +971,72 @@
     currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     applyTheme(currentTheme);
   });
+
+  /* ===== DADOS ESTÁTICOS (puxando do Supabase) ===== */
+  async function carregarDadosEstaticos(){
+    if(!participaDB) return; // Supabase não configurado: mantém os números fixos em zero
+
+    const { data, error } = await participaDB
+      .from('registros')
+      .select('bairro, categoria, status, created_at, nome');
+
+    if(error){ console.error(error); return; }
+
+    const total = data.length;
+
+    const hoje = new Date();
+    const registrosNoMes = data.filter(r => {
+      const d = new Date(r.created_at);
+      return d.getMonth() === hoje.getMonth() && d.getFullYear() === hoje.getFullYear();
+    }).length;
+
+    const bairrosAtivos = new Set(data.map(r => r.bairro).filter(Boolean)).size;
+
+    const respondidos = data.filter(r => r.status === 'respondido').length;
+    const percentRespondido = total > 0 ? Math.round((respondidos / total) * 100) : 0;
+
+    // "Moradores participando" conta pessoas únicas pelo nome informado
+    // (registros anônimos são somados como participantes distintos entre si)
+    const moradores = data.filter(r => (r.nome || '').trim() && r.nome.trim().toLowerCase() !== 'anônimo').length
+      + data.filter(r => !r.nome || r.nome.trim().toLowerCase() === 'anônimo').length;
+
+    const statCards = document.querySelectorAll('#page-dados .stat-card .n');
+    if(statCards[0]) statCards[0].textContent = registrosNoMes;
+    if(statCards[1]) statCards[1].textContent = bairrosAtivos;
+    if(statCards[2]) statCards[2].textContent = percentRespondido + '%';
+    if(statCards[3]) statCards[3].textContent = moradores;
+
+    const categoriasMap = {
+      'cat.infra': 'Infraestrutura',
+      'cat.criticas': 'Críticas',
+      'cat.meio': 'Meio ambiente',
+      'cat.seg': 'Segurança',
+      'cat.saude': 'Saúde',
+      'cat.edu': 'Educação'
+    };
+    const contagens = {};
+    Object.values(categoriasMap).forEach(c => contagens[c] = 0);
+    data.forEach(r => { if(contagens.hasOwnProperty(r.categoria)) contagens[r.categoria]++; });
+    const maiorValor = Math.max(1, ...Object.values(contagens));
+
+    document.querySelectorAll('#page-dados .bar-row').forEach(row => {
+      const labelEl = row.querySelector('.label');
+      const chave = labelEl.getAttribute('data-i18n');
+      const nomeCategoria = categoriasMap[chave];
+      if(!nomeCategoria) return;
+      const valor = contagens[nomeCategoria] || 0;
+      row.querySelector('.val').textContent = valor;
+      row.querySelector('.bar-fill').style.width = ((valor / maiorValor) * 100) + '%';
+    });
+
+    const disclaimer = document.querySelector('#page-dados .disclaimer');
+    if(disclaimer && total > 0){
+      disclaimer.removeAttribute('data-i18n');
+      disclaimer.textContent = 'Dados atualizados automaticamente a partir dos registros reais enviados pelos moradores.';
+    }
+  }
+
+  carregarDadosEstaticos();
 </script>
 </body>
 </html>
