@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://jywyosclejimbfwfynpb.supabase.co; connect-src 'self' https://jywyosclejimbfwfynpb.supabase.co; frame-ancestors 'self'; base-uri 'self'; form-action 'self';">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Participa+ | Democracia participativa de Icó</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -398,15 +400,19 @@
   footer strong{ color:var(--accent-fixed); }
   footer .footer-logos{
     display:flex; align-items:center; justify-content:center; gap:20px;
-    margin:0 0 14px;
+    margin:0 0 14px; flex-wrap:wrap;
   }
   footer .footer-logo{
     width:56px !important; height:56px !important; max-width:56px !important;
-    display:block; margin:0;
+    display:block; margin:0; object-fit:contain;
     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
   }
   footer .footer-logo-vc{
-    width:auto !important; height:64px !important; max-width:none !important;
+    width:auto !important; height:110px !important; max-width:80vw !important;
+    object-fit:contain;
+  }
+  @media (max-width:520px){
+    footer .footer-logo-vc{ height:80px !important; }
   }
 </style>
 </head>
@@ -508,9 +514,13 @@
   </div>
   <div class="wrap">
     <form class="form-shell" id="participarForm">
+      <div style="position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden;" aria-hidden="true">
+        <label for="websiteHoneypot">Deixe em branco</label>
+        <input type="text" id="websiteHoneypot" name="website" tabindex="-1" autocomplete="off">
+      </div>
       <div class="field">
         <label data-i18n="field.nome">Nome <span class="opt" data-i18n="field.opcional">(opcional)</span></label>
-        <input type="text" id="nomeInput" placeholder="Seu nome ou apelido" data-i18n-placeholder="placeholder.nome">
+        <input type="text" id="nomeInput" maxlength="80" autocomplete="off" placeholder="Seu nome ou apelido" data-i18n-placeholder="placeholder.nome">
       </div>
       <div class="row2">
         <div class="field">
@@ -672,7 +682,7 @@
       </div>
       <div class="field">
         <label data-i18n="field.descricao">Descrição <span class="req">*</span></label>
-        <textarea required id="descricaoInput" placeholder="Descreva com detalhes..." data-i18n-placeholder="placeholder.descricao"></textarea>
+        <textarea required id="descricaoInput" maxlength="2000" placeholder="Descreva com detalhes..." data-i18n-placeholder="placeholder.descricao"></textarea>
       </div>
       <div class="field">
         <label data-i18n="field.foto">Foto <span class="opt" data-i18n="field.opcional">(opcional)</span></label>
@@ -683,7 +693,7 @@
       <div class="field">
         <label data-i18n="field.localizacao">Localização <span class="opt" data-i18n="field.opcional">(opcional)</span></label>
         <p class="field-hint" data-i18n="field.hint">Se achar necessário, descreva abaixo um ponto de referência ou endereço próximo ao local relatado. O mapa mostra a região de Icó apenas para consulta.</p>
-        <input type="text" id="localizacaoInput" placeholder="Ponto de referência ou endereço (opcional)" data-i18n-placeholder="placeholder.local">
+        <input type="text" id="localizacaoInput" maxlength="200" placeholder="Ponto de referência ou endereço (opcional)" data-i18n-placeholder="placeholder.local">
         <div class="map-embed">
           <iframe src="https://www.google.com/maps?q=Ic%C3%B3,+Cear%C3%A1&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de Icó, Ceará"></iframe>
         </div>
@@ -708,7 +718,7 @@
     <div class="form-shell" style="padding:24px; margin:24px 0;">
       <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;" data-i18n="acompanhar.label">Número de protocolo</label>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <input type="text" id="protocoloInput" data-i18n-placeholder="acompanhar.placeholder" placeholder="Ex: 1042" style="flex:1; min-width:160px; padding:12px 14px; font-size:15px; border:2px solid var(--line); border-radius:4px; background:var(--card-bg); color:var(--ink); font-family:inherit;">
+        <input type="text" id="protocoloInput" maxlength="20" data-i18n-placeholder="acompanhar.placeholder" placeholder="Ex: 1042" style="flex:1; min-width:160px; padding:12px 14px; font-size:15px; border:2px solid var(--line); border-radius:4px; background:var(--card-bg); color:var(--ink); font-family:inherit;">
         <button id="buscarProtocoloBtn" class="btn primary" type="button" data-i18n="acompanhar.btn">Buscar</button>
       </div>
       <div id="protocoloResultado" style="margin-top:22px;"></div>
@@ -960,6 +970,13 @@
   document.getElementById('navToggle').addEventListener('click', ()=>{
     document.getElementById('tabsNav').classList.toggle('open');
   });
+
+  /* ===== SEGURANÇA: escape de HTML para qualquer texto vindo do usuário/banco ===== */
+  function escapeHTML(str){
+    return String(str ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[ch]));
+  }
   /* ===== FOTO: preview + compressão ===== */
   const fotoInput = document.getElementById('fotoInput');
   const fotoPreview = document.getElementById('fotoPreview');
@@ -987,6 +1004,18 @@
   fotoInput.addEventListener('change', async () => {
     const file = fotoInput.files[0];
     if(!file) return;
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+    const tamanhoMaximo = 15 * 1024 * 1024; // 15MB antes de comprimir
+    if(!tiposPermitidos.includes(file.type)){
+      alert('Formato de imagem não suportado. Envie uma foto em JPG, PNG ou WEBP.');
+      fotoInput.value = '';
+      return;
+    }
+    if(file.size > tamanhoMaximo){
+      alert('A foto é muito grande. Escolha uma imagem de até 15MB.');
+      fotoInput.value = '';
+      return;
+    }
     fotoComprimida = await comprimirImagem(file);
     fotoPreview.src = URL.createObjectURL(fotoComprimida);
     fotoPreview.style.display = 'block';
@@ -994,48 +1023,73 @@
 
   document.getElementById('participarForm').addEventListener('submit', async function(e){
     e.preventDefault();
-    const registro = {
-      nome: document.getElementById('nomeInput').value || 'Anônimo',
-      bairro: document.getElementById('bairroSelect').value,
-      categoria: document.getElementById('categoriaSelect').value,
-      descricao: document.getElementById('descricaoInput').value,
-      localizacao: document.getElementById('localizacaoInput').value,
-      status: 'pendente',
-      resposta: '',
-      foto_url: null
-    };
 
-    let protocoloGerado = null;
+    // Honeypot: bots costumam preencher todos os campos, incluindo este, que é invisível para humanos
+    const honeypot = document.getElementById('websiteHoneypot').value;
+    if(honeypot){
+      // finge sucesso para não dar dica ao bot, mas não grava nada
+      this.reset();
+      return;
+    }
 
-    if(participaDB){
-      if(fotoComprimida){
-        const nomeArquivo = `registro-${Date.now()}.jpg`;
-        const { error: uploadError } = await participaDB.storage.from('fotos').upload(nomeArquivo, fotoComprimida, { contentType: 'image/jpeg' });
-        if(uploadError){ console.error(uploadError); alert('Não foi possível enviar a foto. Tente novamente.'); return; }
-        const { data: urlData } = participaDB.storage.from('fotos').getPublicUrl(nomeArquivo);
-        registro.foto_url = urlData.publicUrl;
+    // Trava contra duplo envio (clique duplo / rede lenta)
+    const submitBtn = this.querySelector('button[type="submit"], .submit-btn');
+    if(this.dataset.enviando === '1') return;
+    this.dataset.enviando = '1';
+    if(submitBtn) submitBtn.disabled = true;
+
+    try{
+      const registro = {
+        nome: (document.getElementById('nomeInput').value || 'Anônimo').slice(0, 80),
+        bairro: document.getElementById('bairroSelect').value,
+        categoria: document.getElementById('categoriaSelect').value,
+        descricao: document.getElementById('descricaoInput').value.slice(0, 2000),
+        localizacao: document.getElementById('localizacaoInput').value.slice(0, 200),
+        status: 'pendente',
+        resposta: '',
+        foto_url: null
+      };
+
+      if(!registro.bairro || !registro.categoria || !registro.descricao.trim()){
+        alert('Preencha bairro, categoria e descrição antes de enviar.');
+        return;
       }
-      const { data: inserido, error } = await participaDB.from('registros').insert([registro]).select('id');
-      if(error){ console.error(error); alert('Não foi possível enviar. Tente novamente em instantes.'); return; }
-      if(inserido && inserido[0]) protocoloGerado = inserido[0].id;
-    } else {
-      registro.id = Date.now();
-      registro.data = new Date().toISOString();
-      if(fotoComprimida){ registro.foto_url = fotoPreview.src; } // apenas para teste local
-      const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
-      lista.unshift(registro);
-      localStorage.setItem('participaRegistros', JSON.stringify(lista));
-      protocoloGerado = registro.id;
-    }
 
-    const confirmEl = document.getElementById('confirmMsg');
-    if(protocoloGerado){
-      confirmEl.innerHTML = `Registro protocolado. Seu número de protocolo é <strong>#${protocoloGerado}</strong> — guarde esse número para acompanhar a resposta na aba "Acompanhar".`;
+      let protocoloGerado = null;
+
+      if(participaDB){
+        if(fotoComprimida){
+          const nomeArquivo = `registro-${Date.now()}.jpg`;
+          const { error: uploadError } = await participaDB.storage.from('fotos').upload(nomeArquivo, fotoComprimida, { contentType: 'image/jpeg' });
+          if(uploadError){ console.error(uploadError); alert('Não foi possível enviar a foto. Tente novamente.'); return; }
+          const { data: urlData } = participaDB.storage.from('fotos').getPublicUrl(nomeArquivo);
+          registro.foto_url = urlData.publicUrl;
+        }
+        const { data: inserido, error } = await participaDB.from('registros').insert([registro]).select('id');
+        if(error){ console.error(error); alert('Não foi possível enviar. Tente novamente em instantes.'); return; }
+        if(inserido && inserido[0]) protocoloGerado = inserido[0].id;
+      } else {
+        registro.id = Date.now();
+        registro.data = new Date().toISOString();
+        if(fotoComprimida){ registro.foto_url = fotoPreview.src; } // apenas para teste local
+        const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
+        lista.unshift(registro);
+        localStorage.setItem('participaRegistros', JSON.stringify(lista));
+        protocoloGerado = registro.id;
+      }
+
+      const confirmEl = document.getElementById('confirmMsg');
+      if(protocoloGerado){
+        confirmEl.innerHTML = `Registro protocolado. Seu número de protocolo é <strong>#${escapeHTML(protocoloGerado)}</strong> — guarde esse número para acompanhar a resposta na aba "Acompanhar".`;
+      }
+      confirmEl.classList.add('show');
+      this.reset();
+      fotoComprimida = null;
+      fotoPreview.style.display = 'none';
+    } finally {
+      this.dataset.enviando = '0';
+      if(submitBtn) submitBtn.disabled = false;
     }
-    confirmEl.classList.add('show');
-    this.reset();
-    fotoComprimida = null;
-    fotoPreview.style.display = 'none';
   });
 
   /* ===== IDIOMA (PT / EN / ES) ===== */
@@ -1176,45 +1230,61 @@
 
   async function buscarProtocolo(){
     const resultadoEl = document.getElementById('protocoloResultado');
-    const valor = document.getElementById('protocoloInput').value.trim().replace('#','');
+    const buscarBtn = document.getElementById('buscarProtocoloBtn');
+    const valorBruto = document.getElementById('protocoloInput').value.trim().replace('#','');
+    // Protocolo é sempre numérico — qualquer outro caractere é descartado antes de consultar
+    const valor = valorBruto.replace(/[^0-9]/g, '');
     if(!valor){
       resultadoEl.innerHTML = `<p style="color:#a33;">${acompanharMsgs.vazio[currentLang]}</p>`;
       return;
     }
+
+    // Limitador simples: evita disparo repetido de buscas (força bruta de protocolos)
+    const agora = Date.now();
+    if(window.__ultimaBuscaProtocolo && (agora - window.__ultimaBuscaProtocolo) < 1200){
+      return;
+    }
+    window.__ultimaBuscaProtocolo = agora;
+    if(buscarBtn) buscarBtn.disabled = true;
+
     resultadoEl.innerHTML = `<p>${acompanharMsgs.buscando[currentLang]}</p>`;
 
     let registro = null;
 
-    // Importante: NUNCA selecionar/exibir foto_url nesta tela — só dados de texto
-    if(participaDB){
-      const { data, error } = await participaDB
-        .from('registros')
-        .select('id, bairro, categoria, descricao, status, resposta, created_at')
-        .eq('id', valor)
-        .maybeSingle();
-      if(error){ console.error(error); resultadoEl.innerHTML = `<p style="color:#a33;">${acompanharMsgs.erro[currentLang]}</p>`; return; }
-      registro = data;
-    } else {
-      const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
-      registro = lista.find(r => String(r.id) === valor) || null;
-    }
+    try{
+      // Importante: NUNCA selecionar/exibir foto_url nesta tela — só dados de texto
+      if(participaDB){
+        const { data, error } = await participaDB
+          .from('registros')
+          .select('id, bairro, categoria, descricao, status, resposta, created_at')
+          .eq('id', valor)
+          .maybeSingle();
+        if(error){ console.error(error); resultadoEl.innerHTML = `<p style="color:#a33;">${acompanharMsgs.erro[currentLang]}</p>`; return; }
+        registro = data;
+      } else {
+        const lista = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
+        registro = lista.find(r => String(r.id) === valor) || null;
+      }
 
-    if(!registro){
-      resultadoEl.innerHTML = `<p style="color:#a33;">${acompanharMsgs.naoAchou[currentLang]}</p>`;
-      return;
-    }
+      if(!registro){
+        resultadoEl.innerHTML = `<p style="color:#a33;">${acompanharMsgs.naoAchou[currentLang]}</p>`;
+        return;
+      }
 
-    const status = registro.status || 'pendente';
-    const dataFmt = new Date(registro.created_at || registro.data).toLocaleString('pt-BR');
-    resultadoEl.innerHTML = `
-      <div style="border-top:1px dashed var(--line); padding-top:18px;">
-        <div style="font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">${dataFmt} · ${registro.bairro || '—'}</div>
-        <div style="font-weight:600; margin-bottom:6px;">${registro.categoria || acompanharMsgs.semCategoria[currentLang]}</div>
-        <div style="font-size:14px; line-height:1.5; margin-bottom:12px;">${(registro.descricao || '').replace(/</g,'&lt;')}</div>
-        <span style="display:inline-block; font-size:12px; font-weight:600; text-transform:uppercase; padding:4px 12px; border-radius:20px; background:${statusCores[status]}26; color:${statusCores[status]};">${statusLabels[status][currentLang]}</span>
-        ${registro.resposta ? `<div style="margin-top:16px; border-top:1px dashed var(--line); padding-top:14px;"><div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--azul-deep);">${acompanharMsgs.respostaTit[currentLang]}</div><div style="font-size:14px; line-height:1.5;">${registro.resposta.replace(/</g,'&lt;')}</div></div>` : `<p style="margin-top:14px; color:var(--ink-soft); font-size:13.5px;">${acompanharMsgs.semResposta[currentLang]}</p>`}
-      </div>
-    `;
+      const status = (registro.status && statusLabels[registro.status]) ? registro.status : 'pendente';
+      const dataFmt = new Date(registro.created_at || registro.data).toLocaleString('pt-BR');
+      resultadoEl.innerHTML = `
+        <div style="border-top:1px dashed var(--line); padding-top:18px;">
+          <div style="font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:8px;">${escapeHTML(dataFmt)} · ${escapeHTML(registro.bairro || '—')}</div>
+          <div style="font-weight:600; margin-bottom:6px;">${escapeHTML(registro.categoria || acompanharMsgs.semCategoria[currentLang])}</div>
+          <div style="font-size:14px; line-height:1.5; margin-bottom:12px;">${escapeHTML(registro.descricao || '')}</div>
+          <span style="display:inline-block; font-size:12px; font-weight:600; text-transform:uppercase; padding:4px 12px; border-radius:20px; background:${statusCores[status]}26; color:${statusCores[status]};">${escapeHTML(statusLabels[status][currentLang])}</span>
+          ${registro.resposta ? `<div style="margin-top:16px; border-top:1px dashed var(--line); padding-top:14px;"><div style="font-size:12.5px; font-weight:600; margin-bottom:6px; color:var(--azul-deep);">${escapeHTML(acompanharMsgs.respostaTit[currentLang])}</div><div style="font-size:14px; line-height:1.5;">${escapeHTML(registro.resposta)}</div></div>` : `<p style="margin-top:14px; color:var(--ink-soft); font-size:13.5px;">${acompanharMsgs.semResposta[currentLang]}</p>`}
+        </div>
+      `;
+    } finally {
+      if(buscarBtn) buscarBtn.disabled = false;
+    }
   }
 
   document.getElementById('buscarProtocoloBtn').addEventListener('click', buscarProtocolo);
