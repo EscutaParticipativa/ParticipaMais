@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://jywyosclejimbfwfynpb.supabase.co; connect-src 'self' https://jywyosclejimbfwfynpb.supabase.co; frame-src https://www.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://fgvrpinkeuiidwvepesp.supabase.co; connect-src 'self' https://fgvrpinkeuiidwvepesp.supabase.co; frame-src https://www.google.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self';">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Participa+ | Democracia participativa de Icó</title>
 <link rel="icon" type="image/png" href="favicon.png">
@@ -1138,11 +1138,82 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const SUPABASE_URL = "https://jywyosclejimbfwfynpb.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_Df3fZ2yLjnYqZYssdHPmvQ_HusitXhV";
+  const SUPABASE_URL = "https://fgvrpinkeuiidwvepesp.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZndnJwaW5rZXVpaWR3dmVwZXNwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNDc2MDIsImV4cCI6MjEwMjkyMzYwMn0.1hqXE5mwRd5ygX33npXvNm9df1vh_jgG2e_B8RMt7qU";
   const participaDB = (SUPABASE_URL.startsWith('http'))
     ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
+</script>
+<script>
+  // ===================== ANALYTICS DE SESSÃO =====================
+  // Mede quanto tempo cada visitante fica no site, quais páginas viu,
+  // e se saiu sem enviar nenhuma manifestação (formulário "Participar").
+  (function(){
+    if(!SUPABASE_URL.startsWith('http')) return; // sem Supabase configurado, não rastreia
+
+    const sessaoId = (crypto.randomUUID ? crypto.randomUUID() : (Date.now()+'-'+Math.random()));
+    const inicio = Date.now();
+    const paginasVisitadas = ['inicio'];
+    let enviouRegistro = false;
+    let ultimoEnvio = 0;
+
+    function tempoAtualSegundos(){
+      return Math.round((Date.now() - inicio) / 1000);
+    }
+
+    function corpoAtual(){
+      return {
+        id: sessaoId,
+        tempo_segundos: tempoAtualSegundos(),
+        paginas_visitadas: paginasVisitadas,
+        enviou_registro: enviouRegistro,
+        atualizado_em: new Date().toISOString()
+      };
+    }
+
+    // Envia (upsert) via REST direto, com keepalive, para funcionar mesmo
+    // quando a aba está fechando (fetch normal seria cancelado nesse momento).
+    function enviarAnalytics(motivo){
+      const agora = Date.now();
+      if(motivo === 'heartbeat' && (agora - ultimoEnvio) < 15000) return; // evita excesso
+      ultimoEnvio = agora;
+      const corpo = JSON.stringify(corpoAtual());
+      try{
+        fetch(`${SUPABASE_URL}/rest/v1/analytics_sessoes?on_conflict=id`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: corpo,
+          keepalive: true
+        }).catch(()=>{});
+      }catch(e){ /* silencioso: analytics nunca deve quebrar o site */ }
+    }
+
+    window.registrarPaginaVisitada = function(nome){
+      if(paginasVisitadas[paginasVisitadas.length-1] !== nome){
+        paginasVisitadas.push(nome);
+      }
+      enviarAnalytics('navegacao');
+    };
+
+    window.registrarEnvioConcluido = function(){
+      enviouRegistro = true;
+      enviarAnalytics('envio');
+    };
+
+    // Heartbeat periódico, para capturar o tempo mesmo se a pessoa não navegar
+    setInterval(()=> enviarAnalytics('heartbeat'), 20000);
+
+    // Quando a aba perde foco/fecha (mobile e desktop)
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'hidden') enviarAnalytics('saida');
+    });
+    window.addEventListener('pagehide', ()=> enviarAnalytics('saida'));
+  })();
 </script>
 <script>
   const tabs = document.querySelectorAll('nav.tabs button');
@@ -1152,6 +1223,7 @@
     pages.forEach(p=>p.classList.toggle('active', p.id==='page-'+name));
     document.getElementById('tabsNav').classList.remove('open');
     window.scrollTo({top:0, behavior:'smooth'});
+    if(typeof registrarPaginaVisitada === 'function') registrarPaginaVisitada(name);
   }
   tabs.forEach(b=> b.addEventListener('click', ()=> goTo(b.dataset.page)));
   document.getElementById('navToggle').addEventListener('click', ()=>{
@@ -1257,6 +1329,8 @@
         localStorage.setItem('participaRegistros', JSON.stringify(lista));
         protocoloGerado = registro.id;
       }
+
+      if(protocoloGerado && typeof registrarEnvioConcluido === 'function') registrarEnvioConcluido();
 
       const confirmEl = document.getElementById('confirmMsg');
       if(protocoloGerado){
