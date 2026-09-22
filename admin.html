@@ -388,8 +388,15 @@
 
   async function atualizarRegistro(id, resposta, status){
     if(participaDB){
-      const { error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id);
-      if(error){ console.error(error); return false; }
+      // .select() no final é essencial: sem ele, o Supabase responde "sucesso" (204)
+      // mesmo quando o RLS bloqueia silenciosamente e 0 linhas são alteradas.
+      // Com .select(), dá pra detectar esse caso e avisar o admin em vez de mentir "Salvo ✓".
+      const { data, error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id).select();
+      if(error){ console.error('Erro ao atualizar registro:', error); return false; }
+      if(!data || data.length === 0){
+        console.error('Update não alterou nenhuma linha — falta a policy de UPDATE (registros_update_anon) ou os grants no Supabase.');
+        return false;
+      }
       return true;
     }
     const todos = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
