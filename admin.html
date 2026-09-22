@@ -264,6 +264,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+  console.log('participa-admin.html versão 3 (com diagnóstico de update) carregada.');
   // ==== CONFIGURAÇÃO DO SUPABASE ====
   // Mesmo projeto usado no index.html (participa-mais) — precisa ser idêntico nos dois arquivos.
   const SUPABASE_URL = "https://fgvrpinkeuiidwvepesp.supabase.co";
@@ -388,31 +389,36 @@
 
   async function atualizarRegistro(id, resposta, status){
     if(participaDB){
-      const { data, error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id).select();
+      try{
+        const { data, error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id).select();
 
-      if(error){
-        return { ok:false, message: 'Erro do Supabase: ' + (error.message || JSON.stringify(error)) };
+        if(error){
+          const partes = [error.message, error.details, error.hint, error.code].filter(Boolean).join(' | ');
+          return { ok:false, message: 'Erro do Supabase: ' + (partes || JSON.stringify(error)) };
+        }
+        if(data && data.length > 0){
+          return { ok:true };
+        }
+
+        // .select() voltou vazio — confere direto no banco se o valor realmente mudou
+        // (cobre o caso raro de o UPDATE ter funcionado mas o RETURNING ter sido bloqueado).
+        const { data: check, error: checkErr } = await participaDB
+          .from('registros')
+          .select('status,resposta')
+          .eq('id', id)
+          .maybeSingle();
+
+        if(!checkErr && check && check.status === status && check.resposta === resposta){
+          return { ok:true };
+        }
+
+        return {
+          ok:false,
+          message: 'O update não alterou nenhuma linha no banco (id=' + id + '). Isso indica que a policy de UPDATE ("registros_update_anon") e/ou os GRANTs do setup_completo.sql ainda não foram aplicados nesse projeto Supabase — ou o admin.html aberto no navegador ainda é o arquivo antigo (tente Ctrl+Shift+R para forçar recarregar sem cache).'
+        };
+      } catch(e){
+        return { ok:false, message: 'Erro inesperado (JS/rede): ' + (e && e.message ? e.message : String(e)) };
       }
-      if(data && data.length > 0){
-        return { ok:true };
-      }
-
-      // .select() voltou vazio — confere direto no banco se o valor realmente mudou
-      // (cobre o caso raro de o UPDATE ter funcionado mas o RETURNING ter sido bloqueado).
-      const { data: check, error: checkErr } = await participaDB
-        .from('registros')
-        .select('status,resposta')
-        .eq('id', id)
-        .maybeSingle();
-
-      if(!checkErr && check && check.status === status && check.resposta === resposta){
-        return { ok:true };
-      }
-
-      return {
-        ok:false,
-        message: 'O update não alterou nenhuma linha no banco. Isso indica que a policy de UPDATE ("registros_update_anon") e/ou os GRANTs do arquivo setup_completo.sql ainda não foram aplicados no Supabase. Rode o SQL completo no SQL Editor do Supabase e tente novamente.'
-      };
     }
     const todos = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
     const idx = todos.findIndex(x => x.id === id);
