@@ -388,16 +388,31 @@
 
   async function atualizarRegistro(id, resposta, status){
     if(participaDB){
-      // .select() no final é essencial: sem ele, o Supabase responde "sucesso" (204)
-      // mesmo quando o RLS bloqueia silenciosamente e 0 linhas são alteradas.
-      // Com .select(), dá pra detectar esse caso e avisar o admin em vez de mentir "Salvo ✓".
       const { data, error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id).select();
-      if(error){ console.error('Erro ao atualizar registro:', error); return false; }
-      if(!data || data.length === 0){
-        console.error('Update não alterou nenhuma linha — falta a policy de UPDATE (registros_update_anon) ou os grants no Supabase.');
-        return false;
+
+      if(error){
+        return { ok:false, message: 'Erro do Supabase: ' + (error.message || JSON.stringify(error)) };
       }
-      return true;
+      if(data && data.length > 0){
+        return { ok:true };
+      }
+
+      // .select() voltou vazio — confere direto no banco se o valor realmente mudou
+      // (cobre o caso raro de o UPDATE ter funcionado mas o RETURNING ter sido bloqueado).
+      const { data: check, error: checkErr } = await participaDB
+        .from('registros')
+        .select('status,resposta')
+        .eq('id', id)
+        .maybeSingle();
+
+      if(!checkErr && check && check.status === status && check.resposta === resposta){
+        return { ok:true };
+      }
+
+      return {
+        ok:false,
+        message: 'O update não alterou nenhuma linha no banco. Isso indica que a policy de UPDATE ("registros_update_anon") e/ou os GRANTs do arquivo setup_completo.sql ainda não foram aplicados no Supabase. Rode o SQL completo no SQL Editor do Supabase e tente novamente.'
+      };
     }
     const todos = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
     const idx = todos.findIndex(x => x.id === id);
@@ -406,7 +421,7 @@
       todos[idx].status = status;
       localStorage.setItem('participaRegistros', JSON.stringify(todos));
     }
-    return true;
+    return { ok:true };
   }
 
   function statusLabel(s){
@@ -490,9 +505,9 @@
 
       saveBtn.addEventListener('click', async () => {
         saveBtn.disabled = true;
-        const ok = await atualizarRegistro(r.id, textarea.value, select.value);
+        const resultado = await atualizarRegistro(r.id, textarea.value, select.value);
         saveBtn.disabled = false;
-        if(ok){
+        if(resultado.ok){
           r.resposta = textarea.value;
           r.status = select.value;
           savedNote.style.display = 'inline';
@@ -501,7 +516,7 @@
           card.querySelector('.badge').textContent = statusLabel(select.value);
           atualizarStats(cacheRegistros);
         } else {
-          alert('Não foi possível salvar. Tente novamente.');
+          alert('Não foi possível salvar.\n\n' + (resultado.message || 'Erro desconhecido. Tente novamente.'));
         }
       });
 
