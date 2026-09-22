@@ -631,4 +631,601 @@
   }
 </script>
 </body>
+</html>    --paper:#0A1220;
+    --paper-deep:#070C16;
+    --ink:#EBF1FF;
+    --ink-soft:#A6B6D8;
+    --azul:#5B8FFF;
+    --azul-deep:#AFC9F7;
+    --azul-mid:#7FA5FF;
+    --azul-pale:#1E3E7A;
+    --coral:#FF8259;
+    --coral-deep:#FFB199;
+    --coral-pale:#3A2418;
+    --line: rgba(235,241,255,0.16);
+    --shadow: 0 2px 0 rgba(0,0,0,0.45);
+    --card-bg:#111B30;
+  }
+  html[data-theme="dark"] body{
+    background-image: radial-gradient(circle at 1px 1px, rgba(235,241,255,0.06) 1px, transparent 0);
+  }
+  html[data-theme="dark"] .btn.primary{ color:var(--ink-fixed); }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh;
+    background:var(--paper);
+    background-image: radial-gradient(circle at 1px 1px, rgba(12,30,61,0.07) 1px, transparent 0);
+    background-size: 22px 22px;
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background-color .2s ease, color .2s ease;
+  }
+  h1,h2,h3,h4{ font-family:'Fraunces', serif; font-weight:700; margin:0; line-height:1.05; letter-spacing:-0.01em; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  button{ font-family:inherit; }
+  .wrap{ max-width:920px; margin:0 auto; padding:0 24px; }
+
+  /* ===== topbar (igual ao site) ===== */
+  .topbar{ position:sticky; top:0; z-index:50; background:var(--ink-fixed); color:var(--paper-fixed); border-bottom:3px solid var(--azul-pale); }
+  .topbar-inner{ max-width:920px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:14px 24px; flex-wrap:wrap; row-gap:10px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:'Fraunces', serif; font-weight:900; font-size:22px; letter-spacing:-0.02em; }
+  .brand .plus{ color:var(--coral); }
+  .brand-mark{ width:34px; height:34px; border-radius:50%; background:var(--azul-deep); display:flex; align-items:center; justify-content:center; color:var(--paper-fixed); font-weight:900; font-size:16px; border:2px solid var(--azul-pale); transform:rotate(-6deg); }
+  .brand-sub{ font-family:'IBM Plex Mono', monospace; font-size:12px; opacity:.72; margin-left:10px; padding-left:10px; border-left:1px solid rgba(235,241,255,0.35); }
+  .topbar-controls{ display:flex; align-items:center; gap:8px; }
+  .theme-toggle, .logout-btn{
+    background:none; border:1px solid rgba(235,241,255,0.4); color:var(--paper-fixed);
+    height:34px; border-radius:6px; cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .theme-toggle{ width:34px; font-size:16px; }
+  .logout-btn{ padding:0 14px; font-weight:600; }
+  .theme-toggle:hover, .logout-btn:hover{ background:rgba(235,241,255,0.08); }
+
+  /* ===== selo / badges ===== */
+  .selo{ display:inline-flex; align-items:center; gap:8px; border:2px solid currentColor; border-radius:999px; padding:6px 16px; font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; transform:rotate(-2deg); }
+  .selo.azul{ color:var(--azul); }
+
+  /* ===== login ===== */
+  #loginScreen{ min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:24px; }
+  .login-card{ position:relative; background:var(--card-bg); border:2px solid var(--ink); border-radius:6px; box-shadow:var(--shadow); padding:40px 36px; width:100%; max-width:380px; text-align:center; }
+  .login-card::before{
+    content:"ACESSO RESTRITO"; position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+    background:var(--azul-pale); color:var(--ink-fixed); font-family:'IBM Plex Mono',monospace;
+    font-size:11px; font-weight:700; letter-spacing:.06em; padding:4px 10px; border:2px solid var(--ink); border-radius:3px; white-space:nowrap;
+  }
+  .login-card h1{ font-size:26px; margin:8px 0 6px; }
+  .login-card p{ color:var(--ink-soft); font-size:14px; margin:0 0 22px; }
+  .login-card input{ width:100%; padding:12px 14px; font-size:15px; border:2px solid var(--line); border-radius:4px; margin-bottom:14px; font-family:inherit; background:var(--card-bg); color:var(--ink); }
+  .login-card input:focus{ outline:none; border-color:var(--azul); }
+  .login-error{ color:var(--pend); font-size:13px; margin-top:10px; min-height:16px; }
+
+  /* ===== botão padrão do site ===== */
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 22px; border-radius:var(--radius); font-weight:700; font-size:14.5px; border:2px solid var(--ink); cursor:pointer; text-decoration:none; box-shadow:var(--shadow); transition:transform .12s ease; width:100%; }
+  .btn:hover{ transform:translate(-1px,-2px); }
+  .btn.primary{ background:var(--azul); color:#fff; border-color:var(--azul-deep); }
+
+  /* ===== painel ===== */
+  #dashboard{ display:none; padding:32px 0 80px; }
+  .page-head{ margin-bottom:8px; }
+  .page-head h1{ font-size:clamp(26px,4vw,36px); margin-top:12px; }
+  .page-head p{ color:var(--ink-soft); margin-top:8px; font-size:14.5px; }
+
+  .stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:26px 0; }
+  @media (max-width:700px){ .stat-grid{ grid-template-columns:repeat(2,1fr);} }
+  .stat-card{ background:var(--ink-fixed); color:var(--paper-fixed); border-radius:4px; padding:16px 18px; border:2px solid var(--ink-fixed); }
+  .stat-card .n{ font-family:'IBM Plex Mono',monospace; font-size:26px; font-weight:700; color:var(--accent-fixed); }
+  .stat-card .l{ font-size:12px; margin-top:4px; color:rgba(235,241,255,0.75); }
+
+  .controls-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+  .search-input{ flex:1; min-width:200px; padding:11px 14px; font-size:14.5px; border:2px solid var(--line); border-radius:4px; background:var(--card-bg); color:var(--ink); font-family:inherit; }
+  .search-input:focus{ outline:none; border-color:var(--azul); }
+  .refresh-btn{ background:var(--card-bg); border:2px solid var(--ink); border-radius:4px; padding:11px 16px; font-size:13.5px; font-weight:600; cursor:pointer; color:var(--ink); box-shadow:var(--shadow); }
+  .refresh-btn:hover{ transform:translate(-1px,-1px); }
+
+  .filters{ display:flex; gap:8px; margin:14px 0 24px; flex-wrap:wrap; }
+  .filters button{ background:var(--card-bg); border:2px solid var(--ink); border-radius:20px; padding:7px 16px; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); }
+  .filters button.active{ background:var(--azul); color:#fff; border-color:var(--azul-deep); }
+
+  /* ===== abas do painel (Registros / Acessos) ===== */
+  .page-tabs{ display:flex; gap:4px; margin:22px 0 6px; border-bottom:2px solid var(--line); }
+  .page-tabs button{ background:transparent; border:none; cursor:pointer; color:var(--ink-soft); font-size:14.5px; font-weight:600; padding:10px 6px; margin-right:18px; position:relative; }
+  .page-tabs button.active{ color:var(--azul); }
+  .page-tabs button.active::after{ content:""; position:absolute; left:0; right:0; bottom:-2px; height:2px; background:var(--coral); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  /* ===== visitantes / analytics ===== */
+  .visita-card{ background:var(--card-bg); border:2px solid var(--ink); border-radius:6px; padding:16px 20px; margin-bottom:12px; box-shadow:var(--shadow); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; align-items:center; }
+  .visita-info{ display:flex; flex-direction:column; gap:4px; min-width:220px; }
+  .visita-meta{ font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+  .visita-paginas{ font-size:13.5px; color:var(--ink); }
+  .visita-paginas .pg{ display:inline-block; background:var(--paper-deep); border-radius:3px; padding:2px 8px; margin:2px 4px 2px 0; font-size:12px; font-family:'IBM Plex Mono', monospace; }
+  .visita-tempo{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:16px; color:var(--azul-deep); text-align:right; }
+  .visita-tempo .l{ display:block; font-family:'IBM Plex Sans', sans-serif; font-weight:400; font-size:11px; color:var(--ink-soft); text-align:right; }
+  .badge.enviou{ background:color-mix(in srgb, var(--resp) 18%, transparent); color:var(--resp); }
+  .badge.naoenviou{ background:var(--paper-deep); color:var(--ink-soft); }
+  .empty-state{ text-align:center; color:var(--ink-soft); padding:60px 20px; font-size:15px; border:2px dashed var(--line); border-radius:6px; }
+
+  .registro-card{ background:var(--card-bg); border:2px solid var(--ink); border-radius:6px; padding:22px; margin-bottom:18px; box-shadow:var(--shadow); }
+  .registro-top{ display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .registro-meta{ font-size:12.5px; color:var(--ink-soft); font-family:'IBM Plex Mono', monospace; }
+  .registro-meta .protocolo{ color:var(--azul-deep); font-weight:700; }
+  .badge{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; padding:4px 12px; border-radius:20px; letter-spacing:.04em; }
+  .badge.pendente{ background:color-mix(in srgb, var(--pend) 18%, transparent); color:var(--pend); }
+  .badge.andamento{ background:color-mix(in srgb, var(--and) 20%, transparent); color:var(--and); }
+  .badge.respondido{ background:color-mix(in srgb, var(--resp) 18%, transparent); color:var(--resp); }
+  .registro-titulo{ font-weight:700; font-size:15.5px; margin:2px 0 8px; font-family:'Fraunces',serif; }
+  .registro-desc{ font-size:14px; line-height:1.55; margin-bottom:12px; color:var(--ink); }
+  .registro-local{ font-size:13px; color:var(--ink-soft); margin-bottom:14px; }
+  .registro-card img{ max-width:240px; width:100%; border-radius:4px; border:2px solid var(--line); margin-bottom:14px; display:block; }
+  .resposta-area{ border-top:1px dashed var(--line); padding-top:14px; }
+  .resposta-area label{ display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color:var(--azul-deep); text-transform:uppercase; letter-spacing:.03em; }
+  .resposta-area textarea{ width:100%; min-height:78px; padding:11px 13px; border:2px solid var(--line); border-radius:4px; font-family:inherit; font-size:14px; resize:vertical; margin-bottom:10px; color:var(--ink); background:var(--card-bg); }
+  .resposta-area textarea:focus{ outline:none; border-color:var(--azul); }
+  .resposta-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .resposta-row select{ padding:9px 10px; border:2px solid var(--line); border-radius:4px; font-family:inherit; font-size:13px; background:var(--card-bg); color:var(--ink); }
+  .save-btn{ background:var(--azul); color:#fff; border:2px solid var(--azul-deep); border-radius:4px; padding:9px 20px; font-size:13.5px; font-weight:700; cursor:pointer; box-shadow:var(--shadow); }
+  .save-btn:hover{ transform:translate(-1px,-1px); }
+  .save-btn:disabled{ opacity:.6; cursor:default; transform:none; }
+  .saved-note{ font-size:12.5px; color:var(--resp); font-weight:600; margin-left:2px; display:none; }
+  .connection-warning{ background:var(--coral-pale); border:2px solid var(--coral-deep); color:var(--coral-deep); border-radius:4px; padding:14px 16px; font-size:13.5px; margin-bottom:22px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">P+</span>
+      Participa<span class="plus">+</span>
+      <span class="brand-sub mono">painel administrativo</span>
+    </div>
+    <div class="topbar-controls">
+      <button class="theme-toggle" id="themeToggle" title="Alternar modo claro/escuro" aria-label="Alternar modo claro/escuro">🌙</button>
+      <button class="logout-btn" id="logoutBtn" style="display:none;">Sair</button>
+    </div>
+  </div>
+</div>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Participa<strong style="color:var(--coral);">+</strong></h1>
+    <p>Área restrita · digite a senha de administrador</p>
+    <input type="password" id="passwordInput" placeholder="Senha" autocomplete="off">
+    <button id="loginBtn" class="btn primary">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<div id="dashboard">
+  <div class="wrap">
+    <div class="page-head">
+      <span class="selo azul">Painel</span>
+      <h1>Registros recebidos</h1>
+      <p>Acompanhe, filtre e responda os registros enviados pelos moradores de Icó.</p>
+    </div>
+
+    <div id="connWarning" style="display:none;" class="connection-warning"></div>
+
+    <div class="page-tabs" id="pageTabs">
+      <button data-tab="registros" class="active">Registros</button>
+      <button data-tab="visitantes">Acessos ao site</button>
+    </div>
+
+    <!-- ===== ABA: REGISTROS ===== -->
+    <div class="tab-panel active" id="tab-registros">
+      <div class="stat-grid" id="statGrid">
+        <div class="stat-card"><div class="n" id="statTotal">–</div><div class="l">Total de registros</div></div>
+        <div class="stat-card"><div class="n" id="statPendente">–</div><div class="l">Pendentes</div></div>
+        <div class="stat-card"><div class="n" id="statAndamento">–</div><div class="l">Em andamento</div></div>
+        <div class="stat-card"><div class="n" id="statRespondido">–</div><div class="l">Respondidos</div></div>
+      </div>
+
+      <div class="controls-row">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar por protocolo, bairro, nome ou categoria...">
+        <button class="refresh-btn" id="refreshBtn">↻ Atualizar</button>
+      </div>
+
+      <div class="filters" id="filters">
+        <button data-filter="todos" class="active">Todos</button>
+        <button data-filter="pendente">Pendentes</button>
+        <button data-filter="andamento">Em andamento</button>
+        <button data-filter="respondido">Respondidos</button>
+      </div>
+
+      <div id="listaRegistros"></div>
+    </div>
+
+    <!-- ===== ABA: VISITANTES / ACESSOS ===== -->
+    <div class="tab-panel" id="tab-visitantes">
+      <div class="stat-grid" id="statGridVisitas">
+        <div class="stat-card"><div class="n" id="statVisitas">–</div><div class="l">Sessões registradas</div></div>
+        <div class="stat-card"><div class="n" id="statVisitasHoje">–</div><div class="l">Sessões hoje</div></div>
+        <div class="stat-card"><div class="n" id="statTempoMedio">–</div><div class="l">Tempo médio no site</div></div>
+        <div class="stat-card"><div class="n" id="statConversao">–</div><div class="l">Enviaram um registro</div></div>
+      </div>
+
+      <div class="controls-row">
+        <input type="text" class="search-input" id="searchVisitas" placeholder="Buscar por página visitada...">
+        <button class="refresh-btn" id="refreshVisitasBtn">↻ Atualizar</button>
+      </div>
+
+      <p style="font-size:13px; color:var(--ink-soft); margin:2px 0 18px;">Cada linha é uma sessão de navegação (uma pessoa que abriu o site). Mostra quanto tempo ficou, quais abas visitou e se chegou a enviar um registro pela aba "Participar".</p>
+
+      <div id="listaVisitas"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  console.log('participa-admin.html versão 3 (com diagnóstico de update) carregada.');
+  // ==== CONFIGURAÇÃO DO SUPABASE ====
+  // Mesmo projeto usado no index.html (participa-mais) — precisa ser idêntico nos dois arquivos.
+  const SUPABASE_URL = "https://fgvrpinkeuiidwvepesp.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_KKzT4IcxX9sxXJbREOXQxA_ws5Oj-n8";
+  const participaDB = (SUPABASE_URL.startsWith('http'))
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  const ADMIN_PASSWORD = "icoparticipa2026"; // troque essa senha aqui quando quiser
+
+  if(!participaDB){
+    document.getElementById('connWarning').style.display = 'block';
+    document.getElementById('connWarning').textContent = 'Supabase não configurado — os dados serão salvos apenas neste navegador (localStorage).';
+  }
+
+  function escapeHTML(str){
+    return String(str ?? '').replace(/[&<>"']/g, ch => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[ch]));
+  }
+
+  /* ---- tema claro/escuro (mesmo comportamento do site) ---- */
+  const themeToggleBtn = document.getElementById('themeToggle');
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+  let currentTheme = 'light';
+  applyTheme(currentTheme);
+  themeToggleBtn.addEventListener('click', () => {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(currentTheme);
+  });
+
+  /* ---- login ---- */
+  const loginScreen = document.getElementById('loginScreen');
+  const dashboard = document.getElementById('dashboard');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginError = document.getElementById('loginError');
+
+  function tryLogin(){
+    if(passwordInput.value === ADMIN_PASSWORD){
+      sessionStorage.setItem('participaAdminLogado', '1');
+      showDashboard();
+    } else {
+      loginError.textContent = 'Senha incorreta. Tente novamente.';
+      passwordInput.value = '';
+    }
+  }
+  document.getElementById('loginBtn').addEventListener('click', tryLogin);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+  logoutBtn.addEventListener('click', () => {
+    sessionStorage.removeItem('participaAdminLogado');
+    dashboard.style.display = 'none';
+    logoutBtn.style.display = 'none';
+    loginScreen.style.display = 'flex';
+    passwordInput.value = '';
+  });
+
+  function showDashboard(){
+    loginScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+    logoutBtn.style.display = 'flex';
+    carregarERenderizar();
+  }
+
+  if(sessionStorage.getItem('participaAdminLogado') === '1'){
+    showDashboard();
+  }
+
+  /* ---- troca de abas (Registros / Acessos) ---- */
+  let visitasCarregadas = false;
+  document.querySelectorAll('#pageTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#pageTabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const alvo = btn.dataset.tab;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + alvo));
+      if(alvo === 'visitantes' && !visitasCarregadas){
+        visitasCarregadas = true;
+        carregarERenderizarVisitas();
+      }
+    });
+  });
+
+  /* ---- estado / filtros / busca ---- */
+  let filtroAtual = 'todos';
+  let termoBusca = '';
+  let cacheRegistros = [];
+
+  document.querySelectorAll('#filters button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#filters button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filtroAtual = btn.dataset.filter;
+      renderLista();
+    });
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    termoBusca = e.target.value.trim().toLowerCase();
+    renderLista();
+  });
+
+  document.getElementById('refreshBtn').addEventListener('click', carregarERenderizar);
+
+  async function getRegistros(){
+    if(participaDB){
+      const { data, error } = await participaDB.from('registros').select('*').order('created_at', { ascending: false });
+      if(error){
+        console.error(error);
+        document.getElementById('connWarning').style.display = 'block';
+        document.getElementById('connWarning').textContent = 'Não foi possível carregar os registros do Supabase. Verifique a conexão ou as policies da tabela.';
+        return [];
+      }
+      return data;
+    }
+    return JSON.parse(localStorage.getItem('participaRegistros') || '[]');
+  }
+
+  async function atualizarRegistro(id, resposta, status){
+    if(participaDB){
+      try{
+        const { data, error } = await participaDB.from('registros').update({ resposta, status }).eq('id', id).select();
+
+        if(error){
+          const partes = [error.message, error.details, error.hint, error.code].filter(Boolean).join(' | ');
+          return { ok:false, message: 'Erro do Supabase: ' + (partes || JSON.stringify(error)) };
+        }
+        if(data && data.length > 0){
+          return { ok:true };
+        }
+
+        // .select() voltou vazio — confere direto no banco se o valor realmente mudou
+        // (cobre o caso raro de o UPDATE ter funcionado mas o RETURNING ter sido bloqueado).
+        const { data: check, error: checkErr } = await participaDB
+          .from('registros')
+          .select('status,resposta')
+          .eq('id', id)
+          .maybeSingle();
+
+        if(!checkErr && check && check.status === status && check.resposta === resposta){
+          return { ok:true };
+        }
+
+        return {
+          ok:false,
+          message: 'O update não alterou nenhuma linha no banco (id=' + id + '). Isso indica que a policy de UPDATE ("registros_update_anon") e/ou os GRANTs do setup_completo.sql ainda não foram aplicados nesse projeto Supabase — ou o admin.html aberto no navegador ainda é o arquivo antigo (tente Ctrl+Shift+R para forçar recarregar sem cache).'
+        };
+      } catch(e){
+        return { ok:false, message: 'Erro inesperado (JS/rede): ' + (e && e.message ? e.message : String(e)) };
+      }
+    }
+    const todos = JSON.parse(localStorage.getItem('participaRegistros') || '[]');
+    const idx = todos.findIndex(x => x.id === id);
+    if(idx > -1){
+      todos[idx].resposta = resposta;
+      todos[idx].status = status;
+      localStorage.setItem('participaRegistros', JSON.stringify(todos));
+    }
+    return { ok:true };
+  }
+
+  function statusLabel(s){
+    return { pendente:'Pendente', andamento:'Em andamento', respondido:'Respondido' }[s] || 'Pendente';
+  }
+
+  function atualizarStats(lista){
+    const total = lista.length;
+    const pendente = lista.filter(r => (r.status||'pendente') === 'pendente').length;
+    const andamento = lista.filter(r => r.status === 'andamento').length;
+    const respondido = lista.filter(r => r.status === 'respondido').length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statPendente').textContent = pendente;
+    document.getElementById('statAndamento').textContent = andamento;
+    document.getElementById('statRespondido').textContent = respondido;
+  }
+
+  async function carregarERenderizar(){
+    document.getElementById('listaRegistros').innerHTML = '<div class="empty-state">Carregando registros...</div>';
+    cacheRegistros = await getRegistros();
+    atualizarStats(cacheRegistros);
+    renderLista();
+  }
+
+  function renderLista(){
+    let lista = filtroAtual === 'todos' ? cacheRegistros : cacheRegistros.filter(r => (r.status||'pendente') === filtroAtual);
+
+    if(termoBusca){
+      lista = lista.filter(r => {
+        const alvo = [
+          String(r.id || ''),
+          r.bairro || '',
+          r.nome || '',
+          r.categoria || '',
+          r.descricao || ''
+        ].join(' ').toLowerCase();
+        return alvo.includes(termoBusca);
+      });
+    }
+
+    const container = document.getElementById('listaRegistros');
+    container.innerHTML = '';
+
+    if(lista.length === 0){
+      container.innerHTML = '<div class="empty-state">Nenhum registro encontrado para esse filtro.</div>';
+      return;
+    }
+
+    lista.forEach(r => {
+      const status = r.status || 'pendente';
+      const card = document.createElement('div');
+      card.className = 'registro-card';
+      const dataFmt = new Date(r.created_at || r.data).toLocaleString('pt-BR');
+      card.innerHTML = `
+        <div class="registro-top">
+          <span class="registro-meta"><span class="protocolo">#${escapeHTML(r.id)}</span> · ${escapeHTML(dataFmt)} · ${escapeHTML(r.nome || 'Anônimo')} · ${escapeHTML(r.bairro || '—')}</span>
+          <span class="badge ${status}">${statusLabel(status)}</span>
+        </div>
+        <div class="registro-titulo">${escapeHTML(r.categoria || 'Sem categoria')}</div>
+        <div class="registro-desc">${escapeHTML(r.descricao || '')}</div>
+        ${r.foto_url ? `<img src="${escapeHTML(r.foto_url)}" alt="Foto enviada pelo morador">` : ''}
+        ${r.localizacao ? `<div class="registro-local">📍 ${escapeHTML(r.localizacao)}</div>` : ''}
+        <div class="resposta-area">
+          <label>Resposta da Prefeitura / Câmara</label>
+          <textarea placeholder="Escreva a resposta para este morador...">${escapeHTML(r.resposta || '')}</textarea>
+          <div class="resposta-row">
+            <select>
+              <option value="pendente" ${status==='pendente'?'selected':''}>Pendente</option>
+              <option value="andamento" ${status==='andamento'?'selected':''}>Em andamento</option>
+              <option value="respondido" ${status==='respondido'?'selected':''}>Respondido</option>
+            </select>
+            <button class="save-btn">Salvar</button>
+            <span class="saved-note">Salvo ✓</span>
+          </div>
+        </div>
+      `;
+      const textarea = card.querySelector('textarea');
+      const select = card.querySelector('select');
+      const saveBtn = card.querySelector('.save-btn');
+      const savedNote = card.querySelector('.saved-note');
+
+      saveBtn.addEventListener('click', async () => {
+        saveBtn.disabled = true;
+        const resultado = await atualizarRegistro(r.id, textarea.value, select.value);
+        saveBtn.disabled = false;
+        if(resultado.ok){
+          r.resposta = textarea.value;
+          r.status = select.value;
+          savedNote.style.display = 'inline';
+          setTimeout(() => { savedNote.style.display = 'none'; }, 1800);
+          card.querySelector('.badge').className = 'badge ' + select.value;
+          card.querySelector('.badge').textContent = statusLabel(select.value);
+          atualizarStats(cacheRegistros);
+        } else {
+          alert('Não foi possível salvar.\n\n' + (resultado.message || 'Erro desconhecido. Tente novamente.'));
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  /* =======================================================
+     ABA VISITANTES / ACESSOS (tabela analytics_sessoes)
+     ======================================================= */
+  let cacheVisitas = [];
+  let termoBuscaVisitas = '';
+
+  document.getElementById('refreshVisitasBtn').addEventListener('click', carregarERenderizarVisitas);
+  document.getElementById('searchVisitas').addEventListener('input', e => {
+    termoBuscaVisitas = e.target.value.trim().toLowerCase();
+    renderVisitas();
+  });
+
+  async function getVisitas(){
+    if(!participaDB) return [];
+    const { data, error } = await participaDB
+      .from('analytics_sessoes')
+      .select('*')
+      .order('atualizado_em', { ascending: false })
+      .limit(500);
+    if(error){
+      console.error(error);
+      document.getElementById('connWarning').style.display = 'block';
+      document.getElementById('connWarning').textContent = 'Não foi possível carregar os acessos. Verifique se a tabela "analytics_sessoes" e suas policies existem no Supabase.';
+      return [];
+    }
+    return data || [];
+  }
+
+  function formatarTempo(segundos){
+    const s = Number(segundos) || 0;
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return m > 0 ? `${m}m ${r}s` : `${r}s`;
+  }
+
+  function atualizarStatsVisitas(lista){
+    const total = lista.length;
+    const hoje = new Date();
+    const hojeCount = lista.filter(v => {
+      const d = new Date(v.atualizado_em);
+      return d.toDateString() === hoje.toDateString();
+    }).length;
+    const tempoMedio = total > 0
+      ? Math.round(lista.reduce((acc, v) => acc + (Number(v.tempo_segundos) || 0), 0) / total)
+      : 0;
+    const enviaram = lista.filter(v => v.enviou_registro).length;
+    const conversao = total > 0 ? Math.round((enviaram / total) * 100) : 0;
+
+    document.getElementById('statVisitas').textContent = total;
+    document.getElementById('statVisitasHoje').textContent = hojeCount;
+    document.getElementById('statTempoMedio').textContent = formatarTempo(tempoMedio);
+    document.getElementById('statConversao').textContent = conversao + '%';
+  }
+
+  async function carregarERenderizarVisitas(){
+    document.getElementById('listaVisitas').innerHTML = '<div class="empty-state">Carregando acessos...</div>';
+    cacheVisitas = await getVisitas();
+    atualizarStatsVisitas(cacheVisitas);
+    renderVisitas();
+  }
+
+  function renderVisitas(){
+    let lista = cacheVisitas;
+    if(termoBuscaVisitas){
+      lista = lista.filter(v => (v.paginas_visitadas || []).join(' ').toLowerCase().includes(termoBuscaVisitas));
+    }
+
+    const container = document.getElementById('listaVisitas');
+    container.innerHTML = '';
+
+    if(!participaDB){
+      container.innerHTML = '<div class="empty-state">Acessos ao site só ficam disponíveis com o Supabase conectado.</div>';
+      return;
+    }
+
+    if(lista.length === 0){
+      container.innerHTML = '<div class="empty-state">Nenhum acesso registrado ainda.</div>';
+      return;
+    }
+
+    lista.forEach(v => {
+      const card = document.createElement('div');
+      card.className = 'visita-card';
+      const dataFmt = new Date(v.atualizado_em).toLocaleString('pt-BR');
+      const paginas = (v.paginas_visitadas || []).map(p => `<span class="pg">${escapeHTML(p)}</span>`).join('');
+      card.innerHTML = `
+        <div class="visita-info">
+          <span class="visita-meta">${escapeHTML(dataFmt)} · sessão ${escapeHTML(String(v.id).slice(0,8))}</span>
+          <div class="visita-paginas">${paginas || '<span class="pg">inicio</span>'}</div>
+          <span class="badge ${v.enviou_registro ? 'enviou' : 'naoenviou'}">${v.enviou_registro ? 'Enviou um registro' : 'Não enviou registro'}</span>
+        </div>
+        <div class="visita-tempo">
+          ${formatarTempo(v.tempo_segundos)}
+          <span class="l">tempo no site</span>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+</script>
+</body>
 </html>
