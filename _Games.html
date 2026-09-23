@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Participar+</title>
+<style>
+:root{
+  --ink:#122b3a; --paper:#f6f1e4; --card:#ffffff;
+  --accent:#2159a6; --accent-dark:#163e78; --good:#2f7d5f; --bad:#b8422f;
+  --line:#d8cdb4; --muted:#6b7d85; --locked:#cbbfa2;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#eee7d6; --paper:#16232a; --card:#1e2f38;
+    --accent:#5b9bd8; --accent-dark:#7fb3e0; --good:#5fbf94; --bad:#e17a63;
+    --line:#31424b; --muted:#8fa3ab; --locked:#3a4a52;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#eee7d6; --paper:#16232a; --card:#1e2f38;
+  --accent:#5b9bd8; --accent-dark:#7fb3e0; --good:#5fbf94; --bad:#e17a63;
+  --line:#31424b; --muted:#8fa3ab; --locked:#3a4a52;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%;}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--paper);color:var(--ink);font-family:Georgia,ui-serif,serif;display:flex;justify-content:center;}
+#app{width:100%;max-width:480px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:16px 16px 28px;}
+@media (max-width:360px){
+  .node{width:48px;height:48px;font-size:15px;}
+  .node-label{font-size:10px;}
+  h1{font-size:19px;}
+  .q{font-size:17px;}
+  .opt{font-size:14px;padding:11px 12px;}
+}
+@media (min-width:700px){
+  #app{max-width:560px;padding-top:32px;}
+  h1{font-size:26px;}
+  .q{font-size:21px;}
+  .node{width:64px;height:64px;font-size:20px;}
+}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;}
+.langs{display:flex;gap:6px;font-family:ui-sans-serif,system-ui,sans-serif;}
+.lang-btn{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:20px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;}
+.lang-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.stats{display:flex;gap:6px;font-family:ui-sans-serif,system-ui,sans-serif;}
+.pill{font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:20px;padding:4px 10px;white-space:nowrap;}
+h1{font-size:22px;margin:6px 0 2px;}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;color:var(--muted);font-size:14px;margin-bottom:14px;}
+
+.trail{position:relative;flex:1;padding:20px 10px 10px;}
+.trail-svg{position:absolute;left:0;top:36px;bottom:36px;width:100%;height:calc(100% - 72px);}
+.node-row{position:relative;display:flex;margin-bottom:34px;z-index:1;}
+.node-row.left{justify-content:flex-start;}
+.node-row.right{justify-content:flex-end;}
+.node{width:58px;height:58px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-family:ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:18px;color:#fff;cursor:pointer;background:var(--locked);}
+.node.current{background:var(--accent);box-shadow:0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);}
+.node.done{background:var(--good);}
+.node:disabled{cursor:default;}
+.node-label{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+.node-wrap{display:flex;flex-direction:column;align-items:center;}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;flex:1;display:flex;flex-direction:column;}
+.mini-bar{height:6px;border-radius:4px;background:var(--line);overflow:hidden;margin-bottom:16px;}
+.mini-bar-fill{height:100%;background:var(--accent);transition:width .3s ease;}
+.q{font-size:19px;line-height:1.4;margin-bottom:18px;}
+.opts{display:flex;flex-direction:column;gap:10px;}
+.opt{font-family:ui-sans-serif,system-ui,sans-serif;text-align:left;font-size:15px;padding:13px 14px;border-radius:10px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;transition:border-color .15s, background .15s;}
+.opt:hover{border-color:var(--accent);}
+.opt.correct{border-color:var(--good);background:color-mix(in srgb, var(--good) 14%, transparent);}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb, var(--bad) 14%, transparent);}
+.opt:disabled{cursor:default;}
+.feedback{font-family:ui-sans-serif,system-ui,sans-serif;margin-top:16px;font-size:14px;color:var(--muted);min-height:20px;}
+.footer{margin-top:18px;display:flex;justify-content:space-between;gap:10px;}
+button.ghost{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;font-size:14px;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer;}
+button.next{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;font-size:15px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 22px;cursor:pointer;}
+button.next:disabled{opacity:.4;cursor:default;}
+
+.end{text-align:center;padding:40px 10px;flex:1;}
+.end h2{font-size:24px;margin-bottom:6px;}
+.end p{font-family:ui-sans-serif,system-ui,sans-serif;color:var(--muted);margin-bottom:22px;}
+.restart{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 26px;font-size:15px;cursor:pointer;}
+
+.shop-open{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;font-size:13px;background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:7px 14px;cursor:pointer;margin-bottom:14px;}
+.shop-list{display:flex;flex-direction:column;gap:14px;}
+.shop-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;font-family:ui-sans-serif,system-ui,sans-serif;}
+.shop-item h3{margin:0 0 4px;font-size:16px;}
+.shop-item p{margin:0 0 12px;font-size:13px;color:var(--muted);}
+.shop-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.buy-btn{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:700;font-size:14px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;cursor:pointer;white-space:nowrap;}
+.buy-btn:disabled{opacity:.4;cursor:default;}
+.hint-btn{font-family:ui-sans-serif,system-ui,sans-serif;font-weight:600;font-size:13px;background:transparent;border:1px dashed var(--accent);color:var(--accent);border-radius:10px;padding:8px 12px;cursor:pointer;margin-bottom:12px;align-self:flex-start;}
+.hint-btn:disabled{opacity:.4;cursor:default;}
+.theme-btn{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:20px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:ui-sans-serif,system-ui,sans-serif;}
+
+/* --- Gamificação --- */
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);}50%{box-shadow:0 0 0 12px color-mix(in srgb, var(--accent) 10%, transparent);}}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+@keyframes popIn{0%{transform:scale(0.4);opacity:0;}70%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+@keyframes shakeX{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(4px);}}
+@keyframes cardIn{0%{opacity:0;transform:translateY(14px) scale(.98);}100%{opacity:1;transform:translateY(0) scale(1);}}
+@keyframes flicker{0%,100%{transform:scale(1) rotate(-2deg);}50%{transform:scale(1.15) rotate(2deg);}}
+@keyframes fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1;}100%{transform:translateY(320px) rotate(360deg);opacity:0;}}
+@keyframes ping{0%{transform:scale(.9);opacity:.8;}100%{transform:scale(1.6);opacity:0;}}
+@keyframes popScore{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-26px) scale(1.3);opacity:0;}}
+.node.current{animation:pulseGlow 1.6s ease-in-out infinite, bob 1.6s ease-in-out infinite;}
+.node{transition:transform .15s ease, background .3s ease;}
+.node:not(:disabled):active{transform:scale(.9);}
+.node.done{animation:popIn .4s ease;}
+.node-wrap{position:relative;}
+.node.current::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px dashed var(--accent);animation:ping 1.8s ease-out infinite;}
+.card{animation:cardIn .35s ease;}
+.card.shake{animation:shakeX .4s ease;}
+.opt{transition:transform .1s ease, border-color .15s, background .15s;}
+.opt:not(:disabled):active{transform:scale(.97);}
+.opt.correct{animation:popIn .3s ease;}
+.opt.wrong{animation:shakeX .4s ease;}
+.pill{transition:transform .2s ease;}
+.pill.bump{animation:popIn .35s ease;}
+.streak-fire{display:inline-block;animation:flicker .5s ease-in-out infinite;}
+.confetti-piece{position:fixed;top:0;width:8px;height:14px;border-radius:2px;pointer-events:none;z-index:999;animation:fall linear forwards;}
+.score-float{position:absolute;font-family:ui-sans-serif,system-ui,sans-serif;font-weight:800;color:var(--good);pointer-events:none;animation:popScore .7s ease-out forwards;}
+.node.current:hover{filter:brightness(1.08);}
+.buy-btn:not(:disabled):active,.next:not(:disabled):active,.restart:active,.shop-open:active{transform:scale(.95);}
+.buy-btn,.next,.restart,.shop-open,.ghost{transition:transform .1s ease;}
+.mini-bar-fill{transition:width .5s cubic-bezier(.34,1.56,.64,1);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+let theme='auto';
+function loadTheme(){
+  try{ const s=localStorage.getItem('cidadania_theme'); if(s) theme=s; }catch(e){}
+}
+function applyTheme(){
+  if(theme==='auto'){ document.documentElement.removeAttribute('data-theme'); }
+  else { document.documentElement.setAttribute('data-theme', theme); }
+  try{ localStorage.setItem('cidadania_theme', theme); }catch(e){}
+}
+loadTheme(); applyTheme();
+const STR={
+  pt:{title:"Participar+",sub:"Toque no próximo desafio da trilha para continuar.",challenge:"Desafio",question:"Pergunta",of:"de",xp:"XP",streak:"sequência",back:"Voltar à trilha",continueBtn:"Continuar",right:"Certinho! Continue assim.",wrong:"Não foi dessa vez — a resposta certa está destacada.",won:"Trilha concluída!",lost:"Você ficou sem vidas",scoreLbl:"Pontuação",bestLbl:"Melhor pontuação salva neste dispositivo",restart:"Jogar novamente",shop:"Lojinha",shopSub:"Troque seu XP por ajudas para a trilha.",freezeName:"Escudo da Sequência",freezeDesc:"Protege sua sequência de acertos na próxima resposta errada.",hintName:"Lupa Certeira",hintDesc:"Elimina uma alternativa errada na pergunta atual.",buy:"Comprar",owned:"Você tem",frozenMsg:"O Escudo da Sequência te protegeu!"},
+  en:{title:"Participar+",sub:"Tap the next challenge on the trail to continue.",challenge:"Challenge",question:"Question",of:"of",xp:"XP",streak:"streak",back:"Back to trail",continueBtn:"Continue",right:"Nice! Keep it up.",wrong:"Not quite — the correct answer is highlighted.",won:"Trail complete!",lost:"You ran out of hearts",scoreLbl:"Score",bestLbl:"Best score saved on this device",restart:"Play again",shop:"Shop",shopSub:"Trade your XP for trail power-ups.",freezeName:"Streak Shield",freezeDesc:"Protects your correct-answer streak on the next wrong answer.",hintName:"Sure-Shot Lens",hintDesc:"Removes one wrong option from the current question.",buy:"Buy",owned:"You have",frozenMsg:"Your Streak Shield protected you!"},
+  es:{title:"Participar+",sub:"Toca el siguiente desafío del camino para continuar.",challenge:"Desafío",question:"Pregunta",of:"de",xp:"XP",streak:"racha",back:"Volver al camino",continueBtn:"Continuar",right:"¡Muy bien! Sigue así.",wrong:"Casi — la respuesta correcta está resaltada.",won:"¡Camino completado!",lost:"Te quedaste sin corazones",scoreLbl:"Puntaje",bestLbl:"Mejor puntaje guardado en este dispositivo",restart:"Jugar de nuevo",shop:"Tienda",shopSub:"Cambia tu XP por ayudas para el camino.",freezeName:"Escudo de Racha",freezeDesc:"Protege tu racha de aciertos en la próxima respuesta incorrecta.",hintName:"Lupa Certera",hintDesc:"Elimina una alternativa incorrecta en la pregunta actual.",buy:"Comprar",owned:"Tienes",frozenMsg:"¡Tu Escudo de Racha te protegió!"}
+};
+
+/* Cada desafio (nó da trilha) contém mais de uma pergunta */
+const CHALLENGES={
+pt:[
+[{q:"O que é cidadania?",o:["O conjunto de direitos e deveres de quem pertence a uma sociedade","Apenas o direito de votar","Um documento de identidade","Um cargo público"],c:0},
+ {q:"O que caracteriza um dever do cidadão?",o:["Pagar impostos e cumprir as leis","Ignorar as eleições","Não participar da comunidade","Desrespeitar normas de trânsito"],c:0}],
+[{q:"A partir de que idade o voto é obrigatório no Brasil?",o:["16 anos","18 anos","21 anos","14 anos"],c:1},
+ {q:"Entre 16 e 18 anos, como é o voto no Brasil?",o:["Proibido","Obrigatório","Facultativo","Só para quem trabalha"],c:2}],
+[{q:"Qual documento é considerado a lei máxima do Brasil?",o:["O Código Civil","A Constituição Federal","O Estatuto da Juventude","O Regimento Interno"],c:1},
+ {q:"O que é um direito social garantido pela Constituição?",o:["Educação","Torcer por um time","Ter um carro","Viajar de avião"],c:0}],
+[{q:"Quais são os três Poderes da República?",o:["Federal, Estadual e Municipal","Executivo, Legislativo e Judiciário","Militar, Civil e Religioso","Federal, Judicial e Popular"],c:1},
+ {q:"O que é o plebiscito?",o:["Uma eleição só para prefeito","Uma consulta popular feita antes de uma decisão","Um tipo de imposto","Um cargo do Judiciário"],c:1}],
+[{q:"Participar de um grêmio estudantil é um exemplo de quê?",o:["Cidadania passiva","Participação cidadã e representação coletiva","Obrigação legal","Punição escolar"],c:1},
+ {q:"Qual é uma forma de exercer cidadania no dia a dia?",o:["Fiscalizar e cobrar melhorias em serviços públicos","Evitar se informar sobre política","Recusar-se a seguir qualquer lei","Ignorar problemas da comunidade"],c:0}]
+],
+en:[
+[{q:"What is citizenship?",o:["The rights and duties of belonging to a society","Only the right to vote","An ID document","A government job"],c:0},
+ {q:"What best describes a citizen's duty?",o:["Paying taxes and following the law","Ignoring elections","Not taking part in the community","Breaking traffic rules"],c:0}],
+[{q:"In Brazil, from what age is voting mandatory?",o:["16","18","21","14"],c:1},
+ {q:"Between 16 and 18, how is voting in Brazil?",o:["Forbidden","Mandatory","Optional","Only for workers"],c:2}],
+[{q:"Which document is Brazil's supreme law?",o:["The Civil Code","The Federal Constitution","The Youth Statute","Internal bylaws"],c:1},
+ {q:"Which of these is a social right guaranteed by the Constitution?",o:["Education","Supporting a sports team","Owning a car","Traveling by plane"],c:0}],
+[{q:"What are the three branches of government?",o:["Federal, State and Municipal","Executive, Legislative and Judicial","Military, Civil and Religious","Federal, Judicial and Popular"],c:1},
+ {q:"What is a plebiscite?",o:["An election only for mayor","A public vote taken before a decision is made","A type of tax","A judicial position"],c:1}],
+[{q:"Joining a student council is an example of what?",o:["Passive citizenship","Civic participation and collective representation","A legal requirement","A school punishment"],c:1},
+ {q:"Which is a way to practice citizenship day to day?",o:["Monitoring and demanding better public services","Avoiding staying informed about politics","Refusing to follow any law","Ignoring community problems"],c:0}]
+],
+es:[
+[{q:"¿Qué es la ciudadanía?",o:["El conjunto de derechos y deberes de quien pertenece a una sociedad","Solo el derecho al voto","Un documento de identidad","Un cargo público"],c:0},
+ {q:"¿Qué caracteriza un deber del ciudadano?",o:["Pagar impuestos y cumplir las leyes","Ignorar las elecciones","No participar en la comunidad","Desrespetar las normas de tránsito"],c:0}],
+[{q:"¿A partir de qué edad el voto es obligatorio en Brasil?",o:["16 años","18 años","21 años","14 años"],c:1},
+ {q:"Entre los 16 y 18 años, ¿cómo es el voto en Brasil?",o:["Prohibido","Obligatorio","Facultativo","Solo para quienes trabajan"],c:2}],
+[{q:"¿Qué documento es la ley suprema de Brasil?",o:["El Código Civil","La Constitución Federal","El Estatuto de la Juventud","El Reglamento Interno"],c:1},
+ {q:"¿Cuál es un derecho social garantizado por la Constitución?",o:["Educación","Apoyar a un equipo","Tener un auto","Viajar en avión"],c:0}],
+[{q:"¿Cuáles son los tres Poderes de la República?",o:["Federal, Estatal y Municipal","Ejecutivo, Legislativo y Judicial","Militar, Civil y Religioso","Federal, Judicial y Popular"],c:1},
+ {q:"¿Qué es un plebiscito?",o:["Una elección solo para alcalde","Una consulta popular hecha antes de una decisión","Un tipo de impuesto","Un cargo del Poder Judicial"],c:1}],
+[{q:"Participar en un consejo estudiantil es un ejemplo de qué?",o:["Ciudadanía pasiva","Participación ciudadana y representación colectiva","Obligación legal","Castigo escolar"],c:1},
+ {q:"¿Cuál es una forma de ejercer la ciudadanía en el día a día?",o:["Fiscalizar y exigir mejoras en servicios públicos","Evitar informarse sobre política","Negarse a seguir cualquier ley","Ignorar los problemas de la comunidad"],c:0}]
+]
+};
+
+let lang='pt', screen='home', chIdx=0, qStep=0, score=0, streak=0, lives=3, completed=[], answered=false, best=0;
+let freezes=0, hints=0, hintUsedThisQ=false, prevScreen='home';
+
+function t(k){ return STR[lang][k]; }
+function loadBest(){ try{ const r=localStorage.getItem('cidadania_best'); if(r) best=parseInt(r,10)||0; }catch(e){} }
+function saveBest(v){ try{ localStorage.setItem('cidadania_best', String(v)); }catch(e){} }
+loadBest();
+
+const app=document.getElementById('app');
+
+/* --- efeitos --- */
+let audioCtx=null;
+function beep(freq,dur,type='sine'){
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.08,audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.start(); o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+function soundRight(){ beep(660,.12); setTimeout(()=>beep(880,.15),90); }
+function soundWrong(){ beep(160,.25,'sawtooth'); }
+function soundWin(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.2),i*120)); }
+function confettiBurst(n=26){
+  const colors=['#2159a6','#2f7d5f','#e0a72f','#b8422f','#5b9bd8'];
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=(45+Math.random()*10)+'vw';
+    el.style.top=(20+Math.random()*10)+'vh';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration=(.9+Math.random()*.8)+'s';
+    el.style.transform=`translateX(${(Math.random()-0.5)*220}px)`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1800);
+  }
+}
+function floatScore(pts){
+  const opts=document.getElementById('opts');
+  if(!opts) return;
+  const el=document.createElement('div');
+  el.className='score-float';
+  el.textContent='+'+pts;
+  el.style.right='10px'; el.style.top='-4px';
+  opts.style.position='relative';
+  opts.appendChild(el);
+  setTimeout(()=>el.remove(),700);
+}
+function bumpPill(sel){
+  document.querySelectorAll(sel).forEach(p=>{ p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump'); });
+}
+
+function topbar(){
+  const icon = theme==='dark' ? '☀️' : theme==='light' ? '🌙' : '🌓';
+  return `<div class="topbar">
+    <div class="langs">
+      <button class="lang-btn ${lang==='pt'?'active':''}" data-lang="pt">PT</button>
+      <button class="lang-btn ${lang==='en'?'active':''}" data-lang="en">EN</button>
+      <button class="lang-btn ${lang==='es'?'active':''}" data-lang="es">ES</button>
+      <button class="theme-btn" id="theme-toggle" title="Tema">${icon}</button>
+    </div>
+    <div class="stats">
+      <div class="pill">❄️${freezes}</div>
+      <div class="pill">🔎${hints}</div>
+      <div class="pill">${'♥'.repeat(lives)}${'♡'.repeat(3-lives)}</div>
+      ${streak>=2 ? `<div class="pill">${streak} <span class="streak-fire">🔥</span></div>` : ''}
+      <div class="pill" id="xp-pill">${score} ${t('xp')}</div>
+    </div>
+  </div>`;
+}
+function bindTopbar(){
+  document.querySelectorAll('.lang-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{ lang=b.dataset.lang; render(); });
+  });
+  const themeBtn=document.getElementById('theme-toggle');
+  if(themeBtn){
+    themeBtn.addEventListener('click', ()=>{
+      theme = theme==='auto' ? 'light' : theme==='light' ? 'dark' : 'auto';
+      applyTheme();
+      render();
+    });
+  }
+}
+
+function render(){
+  if(screen==='home') return renderHome();
+  if(screen==='question') return renderQuestion();
+  if(screen==='shop') return renderShop();
+  if(screen==='end') return renderEnd();
+}
+
+function renderHome(){
+  const chs=CHALLENGES[lang];
+  const rows=chs.map((_,i)=>{
+    const side = i%2===0 ? 'left':'right';
+    let cls='node', label=String(i+1);
+    let clickable=false;
+    if(completed[i]){ cls+=' done'; label='✓'; }
+    else if(i===chIdx){ cls+=' current'; clickable=true; }
+    return `<div class="node-row ${side}">
+      <div class="node-wrap">
+        <button class="${cls}" data-i="${i}" ${clickable?'':'disabled'}>${label}</button>
+        <div class="node-label">${t('challenge')} ${i+1}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const n=chs.length;
+  const pts=chs.map((_,i)=>{
+    const x = i%2===0 ? 8 : 92;
+    const y = n>1 ? (i/(n-1))*100 : 50;
+    return {x,y};
+  });
+  let d = `M ${pts[0].x},${pts[0].y}`;
+  for(let i=1;i<pts.length;i++){
+    const p0=pts[i-1], p1=pts[i];
+    const mid=(p0.y+p1.y)/2;
+    d += ` C ${p0.x},${mid} ${p1.x},${mid} ${p1.x},${p1.y}`;
+  }
+
+  app.innerHTML=`
+    ${topbar()}
+    <h1>${t('title')}</h1>
+    <div class="sub">${t('sub')}</div>
+    <button class="shop-open" id="open-shop">🛍️ ${t('shop')}</button>
+    <div class="trail">
+      <svg class="trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="4 3" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+      </svg>
+      ${rows}
+    </div>
+  `;
+  bindTopbar();
+  document.getElementById('open-shop').addEventListener('click', ()=>{ prevScreen='home'; screen='shop'; render(); });
+  document.querySelectorAll('.node:not([disabled])').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ beep(440,.08); qStep=0; screen='question'; render(); });
+  });
+}
+
+function renderQuestion(){
+  const chQuestions=CHALLENGES[lang][chIdx];
+  const item=chQuestions[qStep];
+  const pct=Math.round((qStep/chQuestions.length)*100);
+  app.innerHTML=`
+    ${topbar()}
+    <div class="sub">${t('challenge')} ${chIdx+1} · ${t('question')} ${qStep+1} ${t('of')} ${chQuestions.length} · ${t('streak')}: ${streak}</div>
+    <div class="card">
+      <div class="mini-bar"><div class="mini-bar-fill" style="width:${pct}%"></div></div>
+      ${hints>0 ? `<button class="hint-btn" id="use-hint">🔎 ${t('hintName')} (${hints})</button>` : ''}
+      <div class="q">${item.q}</div>
+      <div class="opts" id="opts">
+        ${item.o.map((op,i)=>`<button class="opt" data-i="${i}">${op}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div class="footer">
+        <button class="ghost" id="back">${t('back')}</button>
+        <button class="next" id="next" disabled>${t('continueBtn')}</button>
+      </div>
+    </div>
+  `;
+  bindTopbar();
+  answered=false;
+  hintUsedThisQ=false;
+  document.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>onAnswer(parseInt(btn.dataset.i,10)));
+  });
+  const hintBtn=document.getElementById('use-hint');
+  if(hintBtn){
+    hintBtn.addEventListener('click', ()=>{
+      if(hintUsedThisQ || answered) return;
+      const opts=document.querySelectorAll('.opt');
+      const wrongIdx=[...opts.keys()].filter(i=>i!==item.c && !opts[i].disabled);
+      if(wrongIdx.length){
+        const pick=wrongIdx[Math.floor(Math.random()*wrongIdx.length)];
+        opts[pick].disabled=true;
+        opts[pick].style.opacity='0.35';
+      }
+      hints--; hintUsedThisQ=true;
+      hintBtn.remove();
+    });
+  }
+  document.getElementById('back').addEventListener('click', ()=>{ screen='home'; render(); });
+  document.getElementById('next').addEventListener('click', ()=>{
+    if(qStep < chQuestions.length-1 && lives>0){
+      qStep++;
+      screen='question';
+    } else {
+      completed[chIdx]=true;
+      chIdx++;
+      screen = (chIdx>=CHALLENGES[lang].length || lives<=0) ? 'end' : 'home';
+    }
+    render();
+  });
+}
+
+function onAnswer(i){
+  if(answered) return;
+  answered=true;
+  const item=CHALLENGES[lang][chIdx][qStep];
+  const opts=document.querySelectorAll('.opt');
+  opts.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb');
+  if(i===item.c){
+    opts[i].classList.add('correct');
+    const gained=10+streak;
+    score+=gained;
+    streak++;
+    fb.textContent=t('right');
+    soundRight();
+    floatScore(gained);
+    if(streak>0 && streak%3===0) confettiBurst(16);
+  }else{
+    opts[i].classList.add('wrong');
+    opts[item.c].classList.add('correct');
+    soundWrong();
+    const card=document.querySelector('.card');
+    if(card){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
+    if(freezes>0){
+      freezes--;
+      fb.textContent=t('frozenMsg');
+    } else {
+      streak=0;
+      fb.textContent=t('wrong');
+    }
+    lives--;
+  }
+  const topbarEl=document.querySelector('.topbar');
+  if(topbarEl) topbarEl.outerHTML=topbar();
+  bindTopbar();
+  document.getElementById('next').disabled=false;
+}
+
+function renderShop(){
+  const freezeCost=20, hintCost=15;
+  app.innerHTML=`
+    ${topbar()}
+    <h1>${t('shop')}</h1>
+    <div class="sub">${t('shopSub')}</div>
+    <div class="shop-list">
+      <div class="shop-item">
+        <h3>❄️ ${t('freezeName')}</h3>
+        <p>${t('freezeDesc')}</p>
+        <div class="shop-row">
+          <span>${t('owned')}: ${freezes}</span>
+          <button class="buy-btn" id="buy-freeze" ${score<freezeCost?'disabled':''}>${t('buy')} · ${freezeCost} XP</button>
+        </div>
+      </div>
+      <div class="shop-item">
+        <h3>🔎 ${t('hintName')}</h3>
+        <p>${t('hintDesc')}</p>
+        <div class="shop-row">
+          <span>${t('owned')}: ${hints}</span>
+          <button class="buy-btn" id="buy-hint" ${score<hintCost?'disabled':''}>${t('buy')} · ${hintCost} XP</button>
+        </div>
+      </div>
+    </div>
+    <div class="footer"><button class="ghost" id="shop-back">${t('back')}</button></div>
+  `;
+  bindTopbar();
+  document.getElementById('shop-back').addEventListener('click', ()=>{ screen=prevScreen; render(); });
+  document.getElementById('buy-freeze').addEventListener('click', ()=>{
+    if(score>=freezeCost){ score-=freezeCost; freezes++; render(); }
+  });
+  document.getElementById('buy-hint').addEventListener('click', ()=>{
+    if(score>=hintCost){ score-=hintCost; hints++; render(); }
+  });
+}
+
+function renderEnd(){
+  const won = lives>0;
+  const newBest = score>best;
+  if(newBest){ best=score; saveBest(best); }
+  app.innerHTML=`
+    ${topbar()}
+    <div class="end">
+      <div style="font-size:54px;line-height:1;margin-bottom:8px;">${won?'🏆':'💔'}</div>
+      <h2>${won? t('won') : t('lost')}</h2>
+      <p>${t('scoreLbl')}: <b>${score} XP</b> · ${t('bestLbl')}: ${best} XP ${newBest?'✨':''}</p>
+      <button class="restart" id="restart">${t('restart')}</button>
+    </div>
+  `;
+  bindTopbar();
+  if(won){ soundWin(); confettiBurst(50); setTimeout(()=>confettiBurst(30),300); }
+  document.getElementById('restart').addEventListener('click', ()=>{
+    chIdx=0;qStep=0;score=0;streak=0;lives=3;completed=[];freezes=0;hints=0;screen='home';render();
+  });
+}
+
+render();
+</script>
+</body>
+</html>
